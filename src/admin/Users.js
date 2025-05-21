@@ -30,15 +30,22 @@ const Users = () => {
                 const res = await axiosInstance.get('/api/admin/users', {
                     headers: { Authorization: `Bearer ${token}` },
                 });
-                setAllUsers(res.data);
-                setUsers(res.data);
+
+                console.log("API Response for users:", res.data);
+
+                // Normalize the response
+                const fetchedUsers = Array.isArray(res.data)
+                    ? res.data
+                    : Array.isArray(res.data.users)
+                        ? res.data.users
+                        : [];
+
+                setAllUsers(fetchedUsers);
+                setUsers(fetchedUsers);
             } catch (err) {
-                if (err.response?.status === 401 || err.response?.status === 404) {
-                    handleLogout();
-                } else {
-                    handleLogout();
-                    toast.error("Error fetching users");
-                }
+                console.error("Error fetching users:", err);
+                handleLogout();
+                toast.error("Error fetching users");
             }
         };
 
@@ -61,7 +68,7 @@ const Users = () => {
                     }
                 );
 
-                toast.success(response.data); // Show backend message in toast
+                toast.success(response.data);
                 setAllUsers(prev => prev.filter(user => user.id !== userId));
             } catch (err) {
                 const errorMsg = err?.response?.data || "Error deleting user";
@@ -70,7 +77,6 @@ const Users = () => {
         }
     };
 
-
     const handleModalChange = (field, value) => {
         setSelectedUser((prev) => ({ ...prev, [field]: value }));
     };
@@ -78,9 +84,13 @@ const Users = () => {
     const handleSubmitUpdate = async (e) => {
         e.preventDefault();
         try {
-            const response = await axiosInstance.patch(`/api/admin/update/user/${selectedUser.id}`, selectedUser, {
-                headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
-            });
+            const response = await axiosInstance.patch(
+                `/api/admin/update/user/${selectedUser.id}`,
+                selectedUser,
+                {
+                    headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+                }
+            );
             toast.success(response.data);
             setShowModal(false);
             window.location.reload();
@@ -130,7 +140,7 @@ const Users = () => {
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-700">
-                        {users.map((user, index) => (
+                        {Array.isArray(users) && users.map((user, index) => (
                             <tr key={user.id} className="bg-gray-900 hover:bg-gray-800 transition duration-200">
                                 <td className="px-6 py-4 text-base">{index + 1}</td>
                                 <td className="px-6 py-4">
@@ -189,7 +199,6 @@ const Users = () => {
                         <form onSubmit={handleSubmitUpdate} className="space-y-4">
                             <input type="hidden" value={selectedUser.id} />
 
-                            {/* Basic Fields */}
                             {["email", "fullName", "password", "activeSubscription", "referredBy"].map(field => (
                                 <div className="flex flex-col" key={field}>
                                     <label className="capitalize">{field}</label>
@@ -214,7 +223,6 @@ const Users = () => {
                                 </div>
                             ))}
 
-                            {/* Password Validity Field */}
                             <div className="flex flex-col">
                                 <label className="capitalize">Password Validity</label>
                                 <input
@@ -225,7 +233,6 @@ const Users = () => {
                                 />
                             </div>
 
-                            {/* Update Plan Field */}
                             <div className="flex flex-col">
                                 <label className="capitalize">Update Plan</label>
                                 <select
@@ -258,7 +265,6 @@ const Users = () => {
                     </div>
                 </div>
             )}
-
         </div>
     );
 };

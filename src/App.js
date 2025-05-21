@@ -41,7 +41,7 @@ const AppContent = () => {
       <div className="pt-16">
         <Suspense fallback={<Loader />}>
           <Routes>
-            <Route path="/" element={<h1 className="text-center p-4">Welcome to Home</h1>} />
+            <Route path="/" element={<Dashboard />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
             <Route path="/profile" element={<UpdateProfile />} />

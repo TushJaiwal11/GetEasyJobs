@@ -98,6 +98,7 @@ const ReferAndEarn = () => {
             <div className="w-full md:w-1/3 bg-white border rounded-xl p-4 shadow-md">
                 <h3 className="text-lg font-semibold text-gray-800 mb-3 text-center">👥 Your Referrals</h3>
 
+
                 {/* Points display */}
                 <div className="bg-gradient-to-r from-yellow-100 to-yellow-200 text-yellow-800 font-bold text-center py-2 rounded-lg mb-4 shadow-inner">
                     🎁 Total Points Earned: <span className="text-xl">{totalPoints}</span>
@@ -195,10 +196,12 @@ const ReferAndEarn = () => {
                     </div>
                 </div>
 
-                <p className="text-center text-sm text-gray-500 italic">
+                <p className="text-center text-sm text-gray-500 italic ">
                     🔁 Earn even more when your referrals invite others — it's a chain of rewards!
                 </p>
             </div>
+
+
 
             <ToastContainer />
         </div>

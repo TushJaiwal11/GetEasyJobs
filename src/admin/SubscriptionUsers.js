@@ -1,4 +1,3 @@
-// src/pages/Dashboard.js
 import React, { useEffect, useState, useCallback } from "react";
 import axiosInstance from "../components/axiosInstance";
 import { useNavigate } from "react-router-dom";
@@ -30,15 +29,14 @@ const Dashboard = () => {
                     headers: { Authorization: `Bearer ${token}` },
                 });
 
-                // 🛡 Safe-check: Ensure res.data is an array
-                if (Array.isArray(res.data)) {
-                    setAllUsers(res.data);
-                    setUsers(res.data);
-                } else {
-                    toast.error("Unexpected response format.");
-                    setAllUsers([]);
-                    setUsers([]);
-                }
+                const fetchedUsers = Array.isArray(res.data)
+                    ? res.data
+                    : Array.isArray(res.data.users)
+                        ? res.data.users
+                        : [];
+
+                setAllUsers(fetchedUsers);
+                setUsers(fetchedUsers);
             } catch (err) {
                 if (err.response?.status === 401 || err.response?.status === 404) {
                     handleLogout();
@@ -53,49 +51,46 @@ const Dashboard = () => {
         fetchUsers();
     }, [handleLogout]);
 
-
     useEffect(() => {
-        const filtered = allUsers.filter((user) => {
-            const search = keyword.toLowerCase();
-            return (
-                user.email?.toLowerCase().includes(search) ||
-                user.fullName?.toLowerCase().includes(search) ||
-                user.activeSubscription?.toString().toLowerCase().includes(search)
-            );
-        });
+        const search = keyword.toLowerCase();
+        const filtered = allUsers.filter((user) =>
+            user.email?.toLowerCase().includes(search) ||
+            user.fullName?.toLowerCase().includes(search) ||
+            (user.activeSubscription?.toString().toLowerCase().includes(search))
+        );
         setUsers(keyword ? filtered : allUsers);
     }, [keyword, allUsers]);
 
     return (
         <div className="p-6 bg-black min-h-screen text-white">
             <ToastContainer position="top-right" />
-            <h2 className="text-3xl font-bold mb-4 border-b border-gray-700 pb-2">All Customers</h2>
+            <h2 className="text-3xl font-bold mb-6 border-b border-gray-700 pb-2">All Subscribed Users</h2>
 
-            <div className="flex mb-6">
+            <div className="flex justify-end mb-4">
                 <input
                     type="text"
                     value={keyword}
                     onChange={(e) => setKeyword(e.target.value)}
-                    placeholder="Search Here..."
-                    className="w-64 p-2 text-base rounded bg-gray-800 text-white placeholder-gray-400 focus:outline-none"
+                    placeholder="Search by name, email, subscription..."
+                    className="w-72 p-2 rounded bg-gray-800 text-white placeholder-gray-400 focus:outline-none border border-gray-600"
                 />
             </div>
 
-            <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-800 text-base">
-                    <thead className="bg-gray-800 text-lg">
+            <div className="overflow-x-auto rounded-lg border border-gray-700">
+                <table className="min-w-full text-sm divide-y divide-gray-800">
+                    <thead className="bg-gray-800 text-gray-300 text-left">
                         <tr>
-                            <th className="px-6 py-3 text-left font-semibold text-gray-300">#</th>
-                            <th className="px-6 py-3 text-left font-semibold text-gray-300">Image</th>
-                            <th className="px-6 py-3 text-left font-semibold text-gray-300">Full Name</th>
-                            <th className="px-6 py-3 text-left font-semibold text-gray-300">Email</th>
-                            <th className="px-6 py-3 text-left font-semibold text-gray-300">Active Subscription</th>
-                            <th className="px-6 py-3 text-left font-semibold text-gray-300">Subscription Expiry</th>
+                            <th className="px-6 py-3 font-semibold">#</th>
+                            <th className="px-6 py-3 font-semibold">Image</th>
+                            <th className="px-6 py-3 font-semibold">Full Name</th>
+                            <th className="px-6 py-3 font-semibold">Email</th>
+                            <th className="px-6 py-3 font-semibold">Active Subscription</th>
+                            <th className="px-6 py-3 font-semibold">Subscription Expiry</th>
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-700">
                         {users.map((user, index) => (
-                            <tr key={user.id} className="bg-gray-900 hover:bg-gray-800 transition duration-200">
+                            <tr key={user.id} className="hover:bg-gray-800 transition duration-150">
                                 <td className="px-6 py-4">{index + 1}</td>
                                 <td className="px-6 py-4">
                                     {user.image ? (
@@ -112,18 +107,20 @@ const Dashboard = () => {
                                 </td>
                                 <td className="px-6 py-4">{user.fullName}</td>
                                 <td className="px-6 py-4">{user.email}</td>
-                                <td className="px-6 py-4">{user.activeSubscription || 'NA'}</td>
+                                <td className="px-6 py-4">
+                                    {user.activeSubscription === 1 ? "Yes" : "No"}
+                                </td>
                                 <td className="px-6 py-4">
                                     {user.subscriptionExpiryDate
                                         ? new Date(user.subscriptionExpiryDate).toLocaleDateString()
-                                        : 'NA'}
+                                        : "NA"}
                                 </td>
                             </tr>
                         ))}
                         {users.length === 0 && (
                             <tr>
-                                <td colSpan="6" className="text-center py-6 text-gray-400 text-lg">
-                                    No users found.
+                                <td colSpan="6" className="text-center py-6 text-gray-400">
+                                    No subscribed users found.
                                 </td>
                             </tr>
                         )}
